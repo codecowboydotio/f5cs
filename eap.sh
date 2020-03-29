@@ -1,5 +1,4 @@
 #!/bin/bash
-
 api_url='api.cloudservices.f5.com'
 api_version='v1'
 aws_region='ap-southeast-2'
@@ -7,7 +6,7 @@ debug='false'
 #cert_id='cert-aa6sBXoygP'
 HEADERS=()
 HEADERS[0]='Content-Type: application/json'
-
+set -x
 set_var() {
   local varname=$1
   shift
@@ -52,7 +51,7 @@ cp eap.template eap.json
 ###############
 read -s -p "Please enter your password " password
 
-[ -z "$cert_id" ] && usage cert_id
+#[ -z "$cert_id" ] && usage cert_id
 [ -z "$domain" ] && usage domain
 [ -z "$username" ] && usage username
 [ -z "$password" ] && usage password
@@ -101,7 +100,7 @@ tempfile=$(mktemp)
 jq --arg dom "$domain" '.configuration.waf_service.application.fqdn = $dom' eap.json > $tempfile && mv $tempfile eap.json
 jq --arg serv_typ "$eap_service_type" '.service_type = $serv_typ' eap.json > $tempfile && mv $tempfile eap.json
 jq --arg acct_id "$primary_user_id" '.account_id = $acct_id' eap.json > $tempfile && mv $tempfile eap.json
-jq --arg cert "$cert_id" '.configuration.waf_service.application.https.tls.certificate_id = $cert' eap.json > $tempfile && mv $tempfile eap.json
+#jq --arg cert "$cert_id" '.configuration.waf_service.application.https.tls.certificate_id = $cert' eap.json > $tempfile && mv $tempfile eap.json
 jq --arg dom "$domain" '.configuration.waf_service.application.waf_regions.aws."ap-southeast-2".endpoint.dns_name = $dom' eap.json > $tempfile && mv $tempfile eap.json
 jq --arg svc_i_nm "$domain" '.service_instance_name = $svc_i_nm' eap.json > $tempfile && mv $tempfile eap.json
 jq --arg cat_id "$eap_catalog_id" '.catalog_id = $cat_id' eap.json > $tempfile
