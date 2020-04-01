@@ -29,6 +29,7 @@ usage() {
   echo "-p password"
   echo "-c certficate file"
   echo "-k key file"
+  echo "-n chain file"
   echo "-t keep tempfiles"
   echo "-v verbose output"
   echo "-z VERY verbose output"
@@ -67,26 +68,39 @@ else
   echo "$key_file does not exist, or is not accessible"
   exit 5;
 fi
+if [ "$chain_file" != "none" ]
+then
+  if [ -f $chain_file ]
+  then
+    NEW_CHAIN=$(format_cert $chain_file)
+  else
+    echo "$chain_file does not exist, or is not accessible"
+    exit 5;
+  fi
+else
+  echo "No chain file passed as part of certificate"
+fi
 
 # Create certificate in cloud services 
 
 
 [[ "$verbose" == "true" ]] && echo "Creating Certificate"
 
-create_cert=$(curl -s -d "{\"account_id\":\"${primary_user_id}\", \"certificate\":\"${NEW_CERT}\", \"private_key\":\"${NEW_KEY}\"}" -H "${HEADERS[0]}" -H "${HEADERS[1]}" -X POST https://$api_url/$api_version/svc-certificates/certificates)
+create_cert=$(curl -s -d "{\"account_id\":\"${primary_user_id}\", \"certificate\":\"${NEW_CERT}\", \"private_key\":\"${NEW_KEY}\", \"certificate_chain\":\"${NEW_CHAIN}\"}" -H "${HEADERS[0]}" -H "${HEADERS[1]}" -X POST https://$api_url/$api_version/svc-certificates/certificates)
 
 [[ "$very_verbose" == "true" ]] && echo "CREATE CERTIFICATE OUTPUT: $create_cert"
 
 NEW_CERT_ID=$(echo $create_cert | jq -r '.id')
 }
 
-while getopts 'c:k:u:d:tvz?h' c
+while getopts 'c:k:u:d:n:tvz?h' c
 do
   case $c in
     d) set_var domain $OPTARG ;;
     u) set_var username $OPTARG ;;
     c) set_var cert_file $OPTARG ;;
     k) set_var key_file $OPTARG ;;
+    n) set_var chain_file $OPTARG ;;
     t) keep_tempfiles=true ;;
     v) verbose=true ;;
     z) very_verbose=true ;;
@@ -106,13 +120,14 @@ cp eap.template eap.json
 # Get the user to enter username and password. 
 # We will use these as variables for the curl requests.
 ###############
-read -s -p "Please enter your password " password
-echo
 [ -z "$domain" ] && usage domain
 [ -z "$username" ] && usage username
-[ -z "$password" ] && usage password
+#[ -z "$password" ] && usage password
 [ -z $cert_file ] && usage cert_file
 [ -z $key_file ] && usage key_file
+[ -z $chain_file ] && chain_file=none
+read -s -p "Please enter your password " password
+echo
 
 
 ###############
@@ -208,7 +223,7 @@ fi
 # TODO: extend function to handle a chain
 ###############
 [[ "$verbose" == "true" ]] && echo "Importing Certificate and Key"
-import_cert $cert_file $key_file
+import_cert $cert_file $key_file $chain_file
 
 echo
 echo "Original certificate ID: $ASSOCIATED_CERT_SUB"
