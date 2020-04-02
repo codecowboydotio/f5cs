@@ -26,7 +26,7 @@ usage() {
   fi
   echo "-d domain name"
   echo "-u username"
-  echo "-p password"
+  echo "-p primary account id"
   echo "-c certficate file"
   echo "-k key file"
   echo "-n chain file"
@@ -93,7 +93,7 @@ create_cert=$(curl -s -d "{\"account_id\":\"${primary_user_id}\", \"certificate\
 NEW_CERT_ID=$(echo $create_cert | jq -r '.id')
 }
 
-while getopts 'c:k:u:d:n:tvz?h' c
+while getopts 'c:k:u:d:n:p:tvz?h' c
 do
   case $c in
     d) set_var domain $OPTARG ;;
@@ -101,6 +101,7 @@ do
     c) set_var cert_file $OPTARG ;;
     k) set_var key_file $OPTARG ;;
     n) set_var chain_file $OPTARG ;;
+    p) set_var primary_acct_id $OPTARG ;;
     t) keep_tempfiles=true ;;
     v) verbose=true ;;
     z) very_verbose=true ;;
@@ -122,7 +123,6 @@ cp eap.template eap.json
 ###############
 [ -z "$domain" ] && usage domain
 [ -z "$username" ] && usage username
-#[ -z "$password" ] && usage password
 [ -z $cert_file ] && usage cert_file
 [ -z $key_file ] && usage key_file
 [ -z $chain_file ] && chain_file=none
@@ -171,7 +171,13 @@ full_user_info=$(curl -s -H "${HEADERS[0]}" -H "${HEADERS[1]}" -X GET https://$a
 #
 # Take note of the jq select funtions. They can be used as examples for other requests should you want to extend this script.
 ###############
-primary_user_id=$(echo $full_user_info | jq -r '.primary_account_id')
+if [ -z $primary_acct_id ]
+then
+  primary_user_id=$(echo $full_user_info | jq -r '.primary_account_id')
+else
+  primary_user_id=$primary_acct_id
+fi
+
 full_catalogue_items=$(curl -s -H "${HEADERS[0]}" -H "${HEADERS[1]}" -X GET https://$api_url/$api_version/svc-catalog/catalogs)
 eap_catalog_id=$(echo $full_catalogue_items | jq -r '.Catalogs[] | select(true) | select(.name|test("Essential App Protect")) | .catalog_id')
 eap_service_type=$(echo $full_catalogue_items | jq -r '.Catalogs[] | select(true) | select(.name|test("Essential App Protect")) | .service_type')
