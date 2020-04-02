@@ -102,7 +102,7 @@ get_user_info
 
 echo "User Info"
 echo "---------"
-echo "User id: $user_id"
+#echo "User id: $user_id"
 echo "Name   : $first_name $last_name"
 echo "Email  : $email"
 
