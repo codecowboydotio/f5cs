@@ -64,6 +64,7 @@ fi
 if [ -f $key_file ]
 then
   NEW_KEY=$(format_cert $key_file)
+  [[ "$very_verbose" == "true" ]] && echo "KEY: $NEW_KEY"
 else
   echo "$key_file does not exist, or is not accessible"
   exit 5;
