@@ -55,7 +55,8 @@ if [ -n $cert_file ]
 then 
   if [ -f $cert_file ]
   then
-    NEW_CERT=$(format_cert $cert_file)
+    #NEW_CERT=$(format_cert $cert_file)
+    NEW_CERT=$(cat $cert_file)
   else
     echo "$cert_file does not exist, or is not accessible"
     exit 5;
@@ -63,7 +64,8 @@ then
 fi
 if [ -f $key_file ]
 then
-  NEW_KEY=$(format_cert $key_file)
+  #NEW_KEY=$(format_cert $key_file)
+  NEW_KEY=$(cat $key_file)
   [[ "$very_verbose" == "true" ]] && echo "KEY: $NEW_KEY"
 else
   echo "$key_file does not exist, or is not accessible"
@@ -73,7 +75,8 @@ if [ "$chain_file" != "none" ]
 then
   if [ -f $chain_file ]
   then
-    NEW_CHAIN=$(format_cert $chain_file)
+    #NEW_CHAIN=$(format_cert $chain_file)
+    NEW_CHAIN=$(cat $chain_file)
   else
     echo "$chain_file does not exist, or is not accessible"
     exit 5;
