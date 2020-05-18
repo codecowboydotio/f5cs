@@ -99,7 +99,7 @@ create_cert=$(curl -s -d "{\"account_id\":\"${primary_user_id}\", \"certificate\
 NEW_CERT_ID=$(echo $create_cert | jq -r '.id')
 }
 
-while getopts 'c:k:u:d:n:p:tvz?h' c
+while getopts 'c:k:u:d:n:p:tvxz?h' c
 do
   case $c in
     d) set_var domain $OPTARG ;;
@@ -132,6 +132,7 @@ cp eap.template eap.json
 [ -z $cert_file ] && usage cert_file
 [ -z $key_file ] && usage key_file
 [ -z $chain_file ] && chain_file=none
+
 read -s -p "Please enter your password " password
 echo
 

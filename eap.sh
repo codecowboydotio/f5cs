@@ -6,7 +6,6 @@ debug='false'
 #cert_id='cert-aa6sBXoygP'
 HEADERS=()
 HEADERS[0]='Content-Type: application/json'
-set -x
 set_var() {
   local varname=$1
   shift
@@ -49,11 +48,13 @@ cp eap.template eap.json
 #Get the user to enter username and password. 
 #We will use these as variables for the curl requests.
 ###############
-read -s -p "Please enter your password " password
 
 #[ -z "$cert_id" ] && usage cert_id
 [ -z "$domain" ] && usage domain
 [ -z "$username" ] && usage username
+
+read -s -p "Please enter your password " password
+
 [ -z "$password" ] && usage password
 
 ###############
