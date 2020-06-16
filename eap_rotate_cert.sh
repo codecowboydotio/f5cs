@@ -120,7 +120,7 @@ done
 # Copy the template json file to the actual
 ###############
 
-cp eap.template eap.json
+#cp eap.template eap.json
 
 
 ###############
