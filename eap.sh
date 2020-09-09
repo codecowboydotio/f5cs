@@ -21,7 +21,6 @@ usage() {
   fi
   echo "-d domain name"
   echo "-u username"
-  echo "-p password"
   echo "-c cert id"
   exit 1;
 }
