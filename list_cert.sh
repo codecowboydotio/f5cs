@@ -1,7 +1,6 @@
 #!/bin/bash
 api_url='api.cloudservices.f5.com'
 api_version='v1'
-aws_region='ap-southeast-2'
 debug='false'
 HEADERS=()
 HEADERS[0]='Content-Type: application/json'
@@ -31,14 +30,6 @@ do
     h|?) usage ;; 
   esac
 done
-
-
-###############
-# Copy the template json file to the actual
-###############
-
-cp eap.template eap.json
-
 
 ###############
 #Get the user to enter username and password. 
@@ -87,9 +78,6 @@ full_user_info=$(curl -s -H "${HEADERS[0]}" -H "${HEADERS[1]}" -X GET https://$a
 # Take note of the jq select funtions. They can be used as examples for other requests should you want to extend this script.
 ###############
 primary_user_id=$(echo $full_user_info | jq -r '.primary_account_id')
-full_catalogue_items=$(curl -s -H "${HEADERS[0]}" -H "${HEADERS[1]}" -X GET https://$api_url/$api_version/svc-catalog/catalogs)
-eap_catalog_id=$(echo $full_catalogue_items | jq -r '.Catalogs[] | select(true) | select(.name|test("Essential App Protect")) | .catalog_id')
-eap_service_type=$(echo $full_catalogue_items | jq -r '.Catalogs[] | select(true) | select(.name|test("Essential App Protect")) | .service_type')
 
 get_certs=$( curl -s -H "${HEADERS[0]}" -H "${HEADERS[1]}" -X GET https://$api_url/$api_version/svc-certificates/certificates/$primary_user_id)
 echo $get_certs | jq -r '.certificates[]' | jq -r '.id' > $0.txt
