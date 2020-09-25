@@ -38,7 +38,9 @@ done
 
 [ -z "$username" ] && usage username
 
-read -s -p "Please enter your password " password
+echo -n "Please enter your password: " 
+read -s password
+echo
 
 [ -z "$password" ] && usage password
 
