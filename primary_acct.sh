@@ -53,6 +53,15 @@ get_membership_info()
 membership_info=$(curl -s -H "${HEADERS[0]}" -H "${HEADERS[1]}" -X GET https://$api_url/$api_version/svc-account/users/$user_id/memberships)
 
 [[ "$very_verbose" == "true" ]] && echo "ACCOUNT INFORMATION: $membership_info"
+
+
+readarray -t memberships < <(echo $membership_info | jq -c '.memberships[] | [.account_id, .account_name, .role_name, .level]')
+
+#account_id="${memberships[0]}"
+#first_name="${memberships[1]}"
+#last_name="${memberships[2]}"
+#email="${memberships[3]}"
+
 }
 
 while getopts 'u:vz?h' c
@@ -111,4 +120,4 @@ get_membership_info
 echo ; echo
 echo "Memberships"
 echo "-------------"
-echo $membership_info | jq -c '.memberships[] | [.account_id, .account_name, .role_name]' | column -t -s'[],"'
+echo $membership_info | jq -c '.memberships[] | [.account_id, .account_name, .role_name, .level]' | column -t -s'[],"'

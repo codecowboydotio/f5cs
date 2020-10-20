@@ -1,0 +1,160 @@
+- name: Manage DNS LB Application
+  hosts: "{{ target_hosts | default('f5cs') }}"
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: ""
+    ansible_httpapi_password: ""
+    ansible_httpapi_use_ssl: yes
+    api_version: v1
+
+    zone_name: aaa.org
+    lbr_name: www
+    endpoint_name: server1
+    endpoint_ip: x.x.x.x
+    pool_name: pool1
+    run_type: create
+    cname: yourcname.com
+
+  tasks:
+    - name: Check that we have all of the variables that we need
+      fail:
+        msg: "Required variable {{ item }} has not been set"
+      when:
+        vars[item] is undefined
+      loop:
+        - ansible_user
+        - ansible_httpapi_password
+        - run_type
+    - name: Do a create
+      block:
+        - name: Check that we have all of the variables that we need
+          fail:
+            msg: "Required variable {{ item }} has not been set"
+          when:
+            vars[item] is undefined
+          loop:
+            - endpoint_name
+            - endpoint_ip
+            - pool_name
+            - zone_name
+        - name: Full DNS LB instance update
+          f5_cs_dnslb_subscription_app:
+            service_instance_name: "{{ zone_name }}"
+            configuration:
+              gslb_service:
+                  zone: "{{ zone_name }}"
+                  load_balanced_records:
+                    lbrs_auction:
+                      aliases:
+                        - "{{ lbr_name }}"
+                      display_name: "{{ lbr_name }}"
+                      enable: true
+                      persistence: false
+                      proximity_rules:
+                          - pool: "pool_1"
+                            region: "global"
+                            score: 1
+                      rr_type: "A"
+                  pools:
+                    pool_1:
+                      display_name: "{{ pool_name }}"
+                      enable: true
+                      load_balancing_mode: "round-robin"
+                      max_answers: 1
+                      members:
+                          - final: null
+                            monitor: "basic"
+                            virtual_server: "ipEndpoint_1"
+                      remark: ""
+                      rr_type: "A"
+                      ttl: 30
+#                  regions:
+#                    regions_usa:
+#                      display_name: "usa"
+#                      sectors:
+#                          - code: "NA"
+#                            scale: "continent"
+                  virtual_servers:
+                    ipEndpoint_1:
+                      address: "{{ endpoint_ip }}"
+                      display_name: "{{ endpoint_name }}"
+                      monitor: "none"
+                      port: 80
+          register: dnslb_output
+        - name: Set fact
+          set_fact:
+            subscription_id: "{{ dnslb_output.subscription_id }}"
+        - debug: var=subscription_id
+        - name: Activate DNS LB instance
+          f5_cs_dnslb_subscription_app:
+            subscription_id: "{{ subscription_id }}"
+            state: "active"
+      when: run_type == 'create'
+    - name: delete process
+      block:
+        - name: Get current subs
+          f5_cs_dnslb_subscription_app:
+            state: fetch
+          register: fetch
+        - debug: var=fetch.apps
+        - name: loop through subs to get sub id
+          set_fact:
+            subscription_id: "{{ item.subscription_id }}"
+          loop:
+            "{{ fetch.apps[1:100] }}"
+          when: item.service_instance_name == "{{ zone_name }}"
+        - debug: var=subscription_id
+        - name: delete sub
+          f5_cs_dnslb_subscription_app:
+            subscription_id: "{{ subscription_id }}"
+            state: absent
+      when: run_type == 'delete'
+    - name: update endpoint and lbr
+      block:
+        - name: Full DNS LB instance update
+          f5_cs_dnslb_subscription_app:
+            service_instance_name: "{{ zone_name }}"
+            configuration:
+              gslb_service:
+                  zone: "{{ zone_name }}"
+                  load_balanced_records:
+                    lbrs_auction:
+                      aliases:
+                        - "{{ endpoint_name }}"
+                      display_name: "{{ endpoint_name }}.svkcode.org"
+                      enable: true
+                      persistence: false
+                      proximity_rules:
+                          - pool: "pool_1"
+                            region: "global"
+                            score: 1
+                      rr_type: "CNAME"
+                  pools:
+                    pool_1:
+                      display_name: "{{ pool_name }}"
+                      enable: true
+                      load_balancing_mode: "round-robin"
+                      max_answers: 1
+                      members:
+                          - final: null
+                            monitor: "basic"
+                            domain: "{{ cname }}"
+                      remark: ""
+                      rr_type: "CNAME"
+                      ttl: 30
+          register: dnslb_output
+        - name: Set fact
+          set_fact:
+            subscription_id: "{{ dnslb_output.subscription_id }}"
+        - debug: var=subscription_id
+        - name: Activate DNS LB instance
+          f5_cs_dnslb_subscription_app:
+            subscription_id: "{{ subscription_id }}"
+            state: "active"
+      when: run_type == 'create-cname'
