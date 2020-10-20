@@ -43,14 +43,27 @@ The blocks are bounded by a variable called run_type
 ## Variables
 
 * **run_type:** This variable is used to determine the action that you want to take.
-  * create       : Creates a DNS LB A record, pool and endpoint
-    * foo
-  * delete       : Deletes a DNS LB (specified by zone name)
-  * create-cname : Creates a DLS LB CNAME record
+  * **create**          : Creates a DNS LB A record, pool and endpoint
+    * **lbr_name**      : The name of the LBR record that you would like to create
+    * **endpoint_name** : The name of the endpoint that you would like to create
+    * **endpoint_ip*  * : The IP address of the endpoint that you would like to create
+    * **pool_name**     : The name of the pool that you would like to create
+    * **zone_name**     : The name of the zone that you would like to have the LBR associated with
+  * **delete**       : Deletes a DNS LB (specified by zone name)
+    * **zone_name**  : The name of the zone that you want to delete (deletes everything, quite brutal)
+  * **create-cname** : Creates a DLS LB CNAME record
+    * **lbr_name**   : The name of the LBR record that you would like to create
+    * **pool_name**  : The name of the pool that you would like to create
+    * **zone_name**  : The name of the zone that you would like to have the LBR associated with
+    * **cname**      : The CNAME record you would like your LBR to point to
 
-* ansible_user             : F5CS username (usually an email)
-* ansible_httpapi_password : Your F5CS password
+* **ansible_user**             : F5CS username (usually an email)
+* **ansible_httpapi_password** : Your F5CS password
 
 ```
-ansible-playbook f5cs-dnslb.yml -e "ansible_httpapi_password=$pass zone_name=zone.org endpoint_name=server1 lbr_name=www endpoint_ip=1.2.3.4 pool_name=pool1 debug=true  run_type=create"
+ansible-playbook f5cs-dnslb.yml -e "ansible_user= you@email.com ansible_httpapi_password=$pass zone_name=zone.org endpoint_name=server1 lbr_name=www endpoint_ip=1.2.3.4 pool_name=pool1 debug=true  run_type=create"
+```
+
+```
+ansible-playbook f5cs-dnslb.yml -e "ansible_user=you@email.comm ansible_httpapi_password=$pass zone_name=zone.org debug=true  run_type=delete"
 ```

@@ -13,13 +13,13 @@
     ansible_httpapi_use_ssl: yes
     api_version: v1
 
-    zone_name: aaa.org
-    lbr_name: www
-    endpoint_name: server1
-    endpoint_ip: x.x.x.x
-    pool_name: pool1
-    run_type: create
-    cname: yourcname.com
+#    zone_name: aaa.org
+#    lbr_name: www
+#    endpoint_name: server1
+#    endpoint_ip: x.x.x.x
+#    pool_name: pool1
+#    run_type: create
+#    cname: yourcname.com
 
   tasks:
     - name: Check that we have all of the variables that we need
@@ -126,8 +126,8 @@
                   load_balanced_records:
                     lbrs_auction:
                       aliases:
-                        - "{{ endpoint_name }}"
-                      display_name: "{{ endpoint_name }}.svkcode.org"
+                        - "{{ lbr_name }}"
+                      display_name: "{{ lbr_name }}"
                       enable: true
                       persistence: false
                       proximity_rules:
