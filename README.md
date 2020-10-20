@@ -59,11 +59,16 @@ The blocks are bounded by a variable called run_type
 
 * **ansible_user**             : F5CS username (usually an email)
 * **ansible_httpapi_password** : Your F5CS password
+* **debug**                    : turns debug on or off - set to true to enable - false by default
 
 ```
-ansible-playbook f5cs-dnslb.yml -e "ansible_user= you@email.com ansible_httpapi_password=$pass zone_name=zone.org endpoint_name=server1 lbr_name=www endpoint_ip=1.2.3.4 pool_name=pool1 debug=true  run_type=create"
+ansible-playbook f5cs-dnslb.yml -e "ansible_user=you@email.com ansible_httpapi_password=$pass zone_name=zone.org endpoint_name=server1 lbr_name=www endpoint_ip=1.2.3.4 pool_name=pool1 debug=true  run_type=create"
 ```
 
 ```
 ansible-playbook f5cs-dnslb.yml -e "ansible_user=you@email.comm ansible_httpapi_password=$pass zone_name=zone.org debug=true  run_type=delete"
+```
+
+```
+ansible-playbook f5cs-dnslb.yml -e "ansible_user=you@email.com ansible_httpapi_password=$pass zone_name=zone.org lbr_name=www pool_name=pool1 cname=www.yahoo.com debug=true  run_type=create-cname"
 ```

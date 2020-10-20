@@ -12,6 +12,7 @@
     ansible_httpapi_password: ""
     ansible_httpapi_use_ssl: yes
     api_version: v1
+    debug: false
 
 #    zone_name: aaa.org
 #    lbr_name: www
@@ -31,7 +32,7 @@
         - ansible_user
         - ansible_httpapi_password
         - run_type
-    - name: Do a create
+    - name: Create A record LBR, pool and endpoint
       block:
         - name: Check that we have all of the variables that we need
           fail:
@@ -87,14 +88,29 @@
                       monitor: "none"
                       port: 80
           register: dnslb_output
+        - name: Show create output (debug only)
+          debug:
+            msg:
+            - dnslb create output {{ dnslb_output }}
+          when: debug == 'true'
         - name: Set fact
           set_fact:
             subscription_id: "{{ dnslb_output.subscription_id }}"
-        - debug: var=subscription_id
+        - name: Show subscription id (debug only)
+          debug:
+            msg:
+            - dnslb create subscription id {{ subscription_id }}
+          when: debug == 'true'
         - name: Activate DNS LB instance
           f5_cs_dnslb_subscription_app:
             subscription_id: "{{ subscription_id }}"
             state: "active"
+          register: activation_output
+        - name: Show activation output (debug only)
+          debug:
+            msg:
+            - dnslb create subscription id {{ activation_output }}
+          when: debug == 'true'
       when: run_type == 'create'
     - name: delete process
       block:
@@ -102,20 +118,34 @@
           f5_cs_dnslb_subscription_app:
             state: fetch
           register: fetch
-        - debug: var=fetch.apps
+        - name: Show current subs (debug only)
+          debug:
+            msg:
+            - current subs {{ fetch }}
+          when: debug == 'true'
         - name: loop through subs to get sub id
           set_fact:
             subscription_id: "{{ item.subscription_id }}"
           loop:
             "{{ fetch.apps[1:100] }}"
           when: item.service_instance_name == "{{ zone_name }}"
-        - debug: var=subscription_id
+        - name: Show subscription id (debug only)
+          debug:
+            msg:
+            - dnslb create subscription id {{ subscription_id }}
+          when: debug == 'true'
         - name: delete sub
           f5_cs_dnslb_subscription_app:
             subscription_id: "{{ subscription_id }}"
             state: absent
+          register: delete_output
+        - name: Show delete output (debug only)
+          debug:
+            msg:
+            - delete output {{ delete_output }}
+          when: debug == 'true'
       when: run_type == 'delete'
-    - name: update endpoint and lbr
+    - name: create CNAME endpoint and lbr
       block:
         - name: Full DNS LB instance update
           f5_cs_dnslb_subscription_app:
@@ -149,12 +179,27 @@
                       rr_type: "CNAME"
                       ttl: 30
           register: dnslb_output
+        - name: Show create output (debug only)
+          debug:
+            msg:
+            - dnslb create output {{ dnslb_output }}
+          when: debug == 'true'
         - name: Set fact
           set_fact:
             subscription_id: "{{ dnslb_output.subscription_id }}"
-        - debug: var=subscription_id
+        - name: Show subscription id (debug only)
+          debug:
+            msg:
+            - dnslb create subscription id {{ subscription_id }}
+          when: debug == 'true'
         - name: Activate DNS LB instance
           f5_cs_dnslb_subscription_app:
             subscription_id: "{{ subscription_id }}"
             state: "active"
+          register: activation_output
+        - name: Show activation output (debug only)
+          debug:
+            msg:
+            - dnslb create subscription id {{ activation_output }}
+          when: debug == 'true'
       when: run_type == 'create-cname'
