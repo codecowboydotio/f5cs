@@ -26,3 +26,20 @@ Memberships
     a-aaRED     DNS Division                 owner
     a-aaGHU     F5 Demo Account              limited-user
 
+# f5cs-dnslb.yml
+
+This is a playbook to create and delete DNS LB objects within F5 Cloud services.
+The playbook uses the F5 collection available here: https://github.com/f5devcentral/f5-ansible-cloudservices
+
+There are a number of variables and techniques to make this playbook work.
+
+## Blocks
+
+I have used blocks in the playbook so that the same playbook can be used for various actions.
+The blocks are bounded by a variable called run_type
+
+## Variables
+
+```
+ansible-playbook f5cs-dnslb.yml -e "ansible_httpapi_password=$pass zone_name=zone.org endpoint_name=server1 lbr_name=www endpoint_ip=1.2.3.4 pool_name=pool1 debug=true  run_type=create"
+```
