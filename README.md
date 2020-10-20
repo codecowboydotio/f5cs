@@ -42,7 +42,7 @@ The blocks are bounded by a variable called run_type
 
 ## Variables
 
-* run_type: This variable is used to determine the action that you want to take.
+* **run_type:** This variable is used to determine the action that you want to take.
   * create       : Creates a DNS LB A record, pool and endpoint
     * foo
   * delete       : Deletes a DNS LB (specified by zone name)
