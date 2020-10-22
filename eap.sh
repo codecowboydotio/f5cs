@@ -97,6 +97,8 @@ eap_catalog_id=$(echo $full_catalogue_items | jq -r '.Catalogs[] | select(true) 
 eap_service_type=$(echo $full_catalogue_items | jq -r '.Catalogs[] | select(true) | select(.name|test("Essential App Protect")) | .service_type')
 ip=$(dig $domain +short)
 
+echo $ip
+
 tempfile=$(mktemp)
 jq --arg dom "$domain" '.configuration.waf_service.application.fqdn = $dom' eap.json > $tempfile && mv $tempfile eap.json
 jq --arg serv_typ "$eap_service_type" '.service_type = $serv_typ' eap.json > $tempfile && mv $tempfile eap.json
@@ -110,7 +112,7 @@ jq --arg cat_id "$eap_catalog_id" '.catalog_id = $cat_id' eap.json > $tempfile
 
 create_service_info=$(curl -s -H "${HEADERS[0]}" -H "${HEADERS[1]}" --data "@${tempfile}" -X POST https://$api_url/$api_version/svc-subscription/subscriptions)
 new_sub_id=$(echo $create_service_info | jq -r '.subscription_id')
-echo "A New subscription has been created $new_sub_id"
+echo "A New subscription has been created: $new_sub_id"
 
 activate_new_sub=$(curl -s -H "${HEADERS[0]}" -H "${HEADERS[1]}"  -X POST https://$api_url/$api_version/svc-subscription/subscriptions/"${new_sub_id}"/activate)
 #sleep 10
