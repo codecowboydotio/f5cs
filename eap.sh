@@ -95,13 +95,16 @@ primary_user_id=$(echo $full_user_info | jq -r '.primary_account_id')
 full_catalogue_items=$(curl -s -H "${HEADERS[0]}" -H "${HEADERS[1]}" -X GET https://$api_url/$api_version/svc-catalog/catalogs)
 eap_catalog_id=$(echo $full_catalogue_items | jq -r '.Catalogs[] | select(true) | select(.name|test("Essential App Protect")) | .catalog_id')
 eap_service_type=$(echo $full_catalogue_items | jq -r '.Catalogs[] | select(true) | select(.name|test("Essential App Protect")) | .service_type')
+ip=$(dig $domain +short)
 
 tempfile=$(mktemp)
 jq --arg dom "$domain" '.configuration.waf_service.application.fqdn = $dom' eap.json > $tempfile && mv $tempfile eap.json
 jq --arg serv_typ "$eap_service_type" '.service_type = $serv_typ' eap.json > $tempfile && mv $tempfile eap.json
 jq --arg acct_id "$primary_user_id" '.account_id = $acct_id' eap.json > $tempfile && mv $tempfile eap.json
 #jq --arg cert "$cert_id" '.configuration.waf_service.application.https.tls.certificate_id = $cert' eap.json > $tempfile && mv $tempfile eap.json
-jq --arg dom "$domain" '.configuration.waf_service.application.waf_regions.aws."ap-southeast-2".endpoint.dns_name = $dom' eap.json > $tempfile && mv $tempfile eap.json
+
+###jq --arg dom "$domain" '.configuration.waf_service.application.waf_regions.aws."ap-southeast-2".endpoint.dns_name = $dom' eap.json > $tempfile && mv $tempfile eap.json
+jq --arg dom "$ip" '.configuration.waf_service.application.waf_regions.aws."ap-southeast-2".endpoint.ips = [$dom]' eap.json > $tempfile && mv $tempfile eap.json
 jq --arg svc_i_nm "$domain" '.service_instance_name = $svc_i_nm' eap.json > $tempfile && mv $tempfile eap.json
 jq --arg cat_id "$eap_catalog_id" '.catalog_id = $cat_id' eap.json > $tempfile
 
