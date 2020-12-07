@@ -127,7 +127,7 @@
           set_fact:
             subscription_id: "{{ item.subscription_id }}"
           loop:
-            "{{ fetch.apps[1:100] }}"
+            "{{ fetch.apps[0:100] }}"
           when: item.service_instance_name == "{{ zone_name }}"
         - name: Show subscription id (debug only)
           debug:
