@@ -1,0 +1,46 @@
+- name: Manage EAP Application
+  hosts: "{{ target_hosts | default('f5cs') }}"
+  gather_facts: true
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: ""
+    ansible_httpapi_password: ""
+    ansible_httpapi_use_ssl: yes
+    api_version: v1
+    debug: false
+
+#    fqdn=www.yahoo.com 
+#    run_type=create 
+#    instance_ip=3.3.3.3
+
+  tasks:
+    - name: Check that we have all of the variables that we need
+      fail:
+        msg: "Required variable {{ item }} has not been set"
+      when:
+        vars[item] is undefined
+      loop:
+        - ansible_user
+        - ansible_httpapi_password
+        - subscription_id
+    - name: Full EAP instance update
+      f5_cs_eap_subscription_app:
+        subscription_id: "{{ subscription_id }}"
+       # wait_status_change: false
+        state: fetch
+      register: eap_create_output
+    - debug: var=eap_create_output
+    - set_fact:
+        # we save some of the dervived variables as host facts so that they can be re-used by pipelines and other playbooks
+        cacheable: yes
+        eap_derived_variables: 
+          eap_subscription_id: "{{ subscription_id }}"
+          eap_account_id: "{{ eap_create_output.account_id }}"
+          eap_catalog_id: "{{ eap_create_output.catalog_id }}"
+          eap_ansible_cname: "{{ eap_create_output.configuration.details.CNAMEValue }}"
+          eap_service_instance_name: "{{ eap_create_output.service_instance_name }}"

@@ -1,0 +1,110 @@
+- name: Manage EAP Application
+  hosts: "{{ target_hosts | default('f5cs') }}"
+  gather_facts: false
+  collections:
+    - f5devcentral.cloudservices
+  connection: httpapi
+
+  vars:
+    ansible_network_os: f5devcentral.cloudservices.f5
+    ansible_host: "api.cloudservices.f5.com"
+    ansible_user: ""
+    ansible_httpapi_password: ""
+    ansible_httpapi_use_ssl: yes
+    api_version: v1
+    debug: false
+
+#    fqdn=www.yahoo.com 
+#    run_type=create 
+#    instance_ip=3.3.3.3
+
+  tasks:
+    - name: Check that we have all of the variables that we need
+      fail:
+        msg: "Required variable {{ item }} has not been set"
+      when:
+        vars[item] is undefined
+      loop:
+        - ansible_user
+        - ansible_httpapi_password
+        - run_type
+        - fqdn
+        - instance_ip
+    - name: Create EAP instance
+      block:
+        - name: Full EAP instance update
+          f5_cs_eap_subscription_app:
+            #subscription_id: "{{ subscription_id }}"
+            wait_status_change: false
+            service_instance_name: "{{ fqdn }}"
+            configuration:
+              update_comment: "update EAP subscription"
+              waf_service:
+                application:
+                  description: "eap subscription"
+                  fqdn: "{{ fqdn }}"
+                  http:
+                    enabled: true
+                    port: 80
+                  https:
+                    enabled: false
+                    port: 443
+                    tls:
+                      certificate_id: ""
+                  waf_regions:
+                    aws:
+                      "ap-southeast-2":
+                        endpoint:
+                          http:
+                            enabled: true
+                            port: 80
+                          ips:
+                            - "{{ instance_ip }}"
+                policy:
+                  encoding: "utf-8"
+                  compliance_enforcement:
+                    enabled: true
+                    data_guard:
+                      enabled: true
+                    sensitive_parameters:
+                      enabled: false
+                  high_risk_attack_mitigation:
+                    enabled: true
+                    enforcement_mode: "monitoring"
+                    allowed_methods:
+                      enabled: true
+                    api_compliance_enforcement:
+                      enabled: true
+                    disallowed_file_types:
+                      enabled: true 
+                      file_types:
+                        - "dll"
+                    geolocation_enforcement:
+                      enabled: true
+                      disallowed_country_codes:
+                        - AD
+                    http_compliance_enforcement:
+                      enabled: true 
+                    ip_enforcement:
+                      enabled: true
+                      ips:
+                        - address: "192.168.1.1"
+                          description: "spam"
+                          action: "block"
+                          log: true
+                    signature_enforcement:
+                      enabled: true 
+                  malicious_ip_enforcement:
+                    enabled: true
+                    enforcement_mode: "monitoring"
+                    ip_categories:
+                      - block: true
+                        log: true
+                        name: "mobile_threats"
+                  threat_campaigns:
+                    enabled: true
+                    enforcement_mode: "monitoring"
+                    campaigns: []
+          register: eap_create_output 
+        - debug: var=eap_create_output
+      when: run_type == 'create'
