@@ -31,10 +31,10 @@
     - name: Full EAP instance update
       f5_cs_eap_subscription_app:
         subscription_id: "{{ subscription_id }}"
-       # wait_status_change: false
         state: fetch
       register: eap_create_output
-    - debug: var=eap_create_output
+    - debug: 
+        var: eap_create_output
     - set_fact:
         # we save some of the dervived variables as host facts so that they can be re-used by pipelines and other playbooks
         cacheable: yes
