@@ -33,7 +33,8 @@
         subscription_id: "{{ subscription_id }}"
         state: fetch
       register: eap_create_output
-    - debug: 
+    - name: Debug output
+      ansible.builtin.debug: 
         var: eap_create_output
     - set_fact:
         # we save some of the dervived variables as host facts so that they can be re-used by pipelines and other playbooks
