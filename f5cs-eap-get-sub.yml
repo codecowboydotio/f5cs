@@ -36,11 +36,11 @@
     - name: Debug output
       ansible.builtin.debug: 
         var: eap_create_output
-    - set_fact:
-        # we save some of the dervived variables as host facts so that they can be re-used by pipelines and other playbooks
-        cacheable: yes
-        eap_derived_variables: 
-          eap_subscription_id: "{{ subscription_id }}"
-          eap_account_id: "{{ eap_create_output.account_id }}"
-          eap_ansible_cname: "{{ eap_create_output.configuration.details.CNAMEValue }}"
-          eap_service_instance_name: "{{ eap_create_output.service_instance_name }}"
+#    - set_fact:
+#        # we save some of the dervived variables as host facts so that they can be re-used by pipelines and other playbooks
+#        cacheable: yes
+#        eap_derived_variables: 
+#          eap_subscription_id: "{{ subscription_id }}"
+#          eap_account_id: "{{ eap_create_output.account_id }}"
+#          eap_ansible_cname: "{{ eap_create_output.configuration.details.CNAMEValue }}"
+#          eap_service_instance_name: "{{ eap_create_output.service_instance_name }}"
