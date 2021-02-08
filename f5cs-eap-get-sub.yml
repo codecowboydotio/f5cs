@@ -42,6 +42,5 @@
         eap_derived_variables: 
           eap_subscription_id: "{{ subscription_id }}"
           eap_account_id: "{{ eap_create_output.account_id }}"
-          eap_catalog_id: "{{ eap_create_output.catalog_id }}"
           eap_ansible_cname: "{{ eap_create_output.configuration.details.CNAMEValue }}"
           eap_service_instance_name: "{{ eap_create_output.service_instance_name }}"
